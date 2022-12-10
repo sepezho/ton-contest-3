@@ -1,0 +1,352 @@
+#pragma version >=0.2.0;
+
+#include "imports/stdlib.fc";
+#include "imports/constants.fc";
+#include "imports/utils.fc";
+
+;; =============== storage =============================
+
+;; storage binary format is defined as TL-B in companion .tlb file
+
+(slice, int) load_data() inline {
+  var ds = get_data().begin_parse();
+  return (
+    ds~load_msg_addr(), ;; owner_address
+    ds~load_uint(64) ;; number
+  );
+}
+
+() save_data(slice owner_address, int number) impure inline {
+  set_data(begin_cell()
+    .store_slice(owner_address)
+    .store_uint(number, 64)
+    .end_cell());
+}
+
+(tuple) revert_tuple(tuple tup) {
+  var (int tuple_length) = tlen(tup);
+  int counter = 0;
+  tuple reverted_tuple = empty_tuple();
+
+  while (counter < tuple_length) {
+    var (int v) = tup~tpop();
+    reverted_tuple~tpush(v);
+
+    counter += 1;
+  }
+
+  return reverted_tuple;
+}
+
+
+(int) default_pow(int num, int pow) {
+  int result = 1;
+  int counter = 0;
+
+  while (counter < pow) {
+    result *= num;
+
+    counter += 1;
+  }
+
+  return result;
+}
+
+(int) make_reverse_calculating(tuple cacheBetweenOperators) {
+  var (int r) = tlen(cacheBetweenOperators);
+
+  int index = -1;
+  int c = 0;
+  int sum = 0;
+
+  while (c < r) {
+    index = c;
+    var (int q) = cacheBetweenOperators~tpop();
+    var digit = q - 48;
+
+    var rqwe = default_pow(10, index);
+    sum += (digit * rqwe);
+
+    c += 1;
+  }
+
+  return sum;
+}
+
+;; [10 2 3 4 5]
+;; [44 44 40 45 41 42 45 43]
+
+
+(tuple) tupleupdate(tuple cacheNumbers, int val, int place){
+  tuple cacheBetweenOperators = empty_tuple();
+  var (int len) = tlen(cacheNumbers);
+  int c = 0;
+  while (c < len) {
+    int action = cacheNumbers.at(c);
+    if (c == place){ ;; +
+      cacheBetweenOperators~tpush(val);
+    }
+    if (((place + 1) == c) | (c == place)){ ;; +
+    } else {
+      cacheBetweenOperators~tpush(action);
+    }
+    c += 1;  
+  }
+  return (cacheBetweenOperators);
+}
+
+(tuple) tuplermitem(tuple cacheNumbers, int place){
+  tuple cacheBetweenOperators = empty_tuple();
+  var (int len) = tlen(cacheNumbers);
+  int c = 0;
+  while (c < len) {
+    int action = cacheNumbers.at(c);
+    if (c == place){ ;; +
+    } else {
+      cacheBetweenOperators~tpush(action);
+    }
+    c += 1;  
+  }
+  return (cacheBetweenOperators);
+}
+
+(tuple) slice(tuple cacheNumbers, int s, int e){
+  tuple cacheBetweenOperators = empty_tuple();
+  var (int len) = tlen(cacheNumbers);
+  int c = 0;
+  while (c < len) {
+    int action = cacheNumbers.at(c);
+    if ((c < s) & (c > e)){ ;; +
+      cacheBetweenOperators~tpush(action);
+    }
+    c += 1;  
+  }
+  return (cacheBetweenOperators);
+}
+
+(int) calc(tuple cacheNumbers, tuple cacheOperators, int caction, int ffcaction){
+  int action = cacheOperators.at(caction);
+  if (action == 45){ ;; )
+    
+    
+    tupleupdate(cacheNumbers, calc(slice(cacheNumbers, ffcaction, caction), slice(cacheOperators, ffcaction, caction), caction + 1, ffcaction), caction)
+    
+    return calc(cacheNumbers, tuplermitem(cacheOperators, caction), caction + 1, ffcaction);
+  } else {
+    if (action == 44){ ;; (
+      return calc(cacheNumbers, cacheOperators, caction + 1, caction);
+    } else {
+      if (action == 43){ ;; /
+        return calc(tupleupdate(cacheNumbers, cacheNumbers.at(caction) / cacheNumbers.at(caction + 1), caction), tuplermitem(cacheOperators,caction),caction + 1,ffcaction);
+      } else {
+        if (action == 42){ ;; *
+          return calc(tupleupdate(cacheNumbers, cacheNumbers.at(caction) * cacheNumbers.at(caction + 1), caction), tuplermitem(cacheOperators,caction),caction + 1,ffcaction);
+        } else {
+          if (action == 41){ ;; -
+            return calc(tupleupdate(cacheNumbers, cacheNumbers.at(caction) - cacheNumbers.at(caction + 1), caction), tuplermitem(cacheOperators,caction),caction + 1,ffcaction);
+          } else {
+            return calc(tupleupdate(cacheNumbers, cacheNumbers.at(caction) + cacheNumbers.at(caction + 1), caction), tuplermitem(cacheOperators,caction),caction + 1,ffcaction);
+          }
+        }
+      }
+    }
+  }
+
+  ;; return (0);
+}
+
+
+;; (int) caldfc(tuple cacheNumbers, tuple cacheOperators){
+;;   var (int len) = tlen(cacheOperators);
+;;   var (tuple ttt) = cacheNumbers;
+;;   int c = 0;
+;;   int caction = 0;
+;;   while (c < len) {
+;;     int action = cacheOperators.at(c);
+;;     if (action == 40){ ;; +
+;;       ~dump(tupleupdate(cacheNumbers, cacheNumbers.at(caction) + cacheNumbers.at(caction + 1), caction));
+;;       ~dump(tuplermitem(cacheOperators,c));
+;;       ~dump(calc(tupleupdate(cacheNumbers, cacheNumbers.at(caction) + cacheNumbers.at(caction + 1), caction), tuplermitem(cacheOperators,c)));
+;;       caction += 1;
+;;     }
+;;     if (action == 41){ ;; -
+;;       ~dump(tupleupdate(cacheNumbers, cacheNumbers.at(caction) - cacheNumbers.at(caction + 1), caction));
+;;       ~dump(tuplermitem(cacheOperators,c));
+;;       ~dump(calc(tupleupdate(cacheNumbers, cacheNumbers.at(caction) - cacheNumbers.at(caction + 1), caction), tuplermitem(cacheOperators,c)));
+;;       caction += 1;
+;;     }
+;;     if (action == 42){ ;; *
+;;       ~dump(tupleupdate(cacheNumbers, cacheNumbers.at(caction) * cacheNumbers.at(caction + 1), caction));
+;;       ~dump(tuplermitem(cacheOperators,c));
+;;       ~dump(calc(tupleupdate(cacheNumbers, cacheNumbers.at(caction) * cacheNumbers.at(caction + 1), caction), tuplermitem(cacheOperators,c)));
+;;       caction += 1;
+;;     }
+;;     if (action == 43){ ;; /
+;;       ~dump(tupleupdate(cacheNumbers, cacheNumbers.at(caction) / cacheNumbers.at(caction + 1), caction));
+;;       ~dump(tuplermitem(cacheOperators,c));
+;;       ~dump(calc(tupleupdate(cacheNumbers, cacheNumbers.at(caction) / cacheNumbers.at(caction + 1), caction), tuplermitem(cacheOperators,c)));
+;;       caction += 1;
+;;     }
+;;     if (action == 44){ ;; (
+;;       ~dump(tuplermitem(cacheOperators,c));
+;;       ~dump(calc(cacheNumbers, tuplermitem(cacheOperators,c)));
+;;       ;; caction += 1;
+;;     }
+;;     if (action == 45){ ;; )
+;;       ~dump(tupleupdate(cacheNumbers, cacheNumbers.at(caction) / cacheNumbers.at(caction + 1), caction));
+;;       ~dump(tuplermitem(cacheOperators,c));
+;;       ~dump(calc(cacheNumbers, tuplermitem(cacheOperators,c)));
+;;       ;; ~dump(calc(tupleupdate(cacheNumbers, cacheNumbers.at(caction) / cacheNumbers.at(caction + 1), caction), tuplermitem(cacheOperators,c)));
+;;       ;; caction += 1;
+;;     }
+;;     c += 1;
+;;   }
+
+;;   return (0);
+;; }
+
+;; =============== messages =============================
+
+;; message binary format is defined as TL-B in companion .tlb file
+
+() recv_internal(int msg_value, cell in_msg, slice in_msg_body) impure {
+  ;; parse incoming internal message
+  slice cs = in_msg.begin_parse();
+  int flags = cs~load_uint(4); ;; int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool
+  slice sender_address = cs~load_msg_addr();
+
+  ;; handle bounced messages
+  if (flags & 1) {
+    return (); ;; ignore
+  }
+
+  ;; load from contract storage
+  var (owner_address, number) = load_data();
+
+  ;; handle operations
+  int op = in_msg_body~load_uint(32);
+
+  ;; payload
+  
+  if (op == op::calculate) {
+    int n1 = 0;
+    ;; todo
+    ;; dynamic payload
+    int count_of_iterations = begin_cell().store_slice(in_msg_body).builder_bits() / 8;
+
+    int result = 0;
+
+    tuple cacheBetweenOperators = empty_tuple();
+    tuple cacheNumbers = empty_tuple();
+    tuple cacheOperators = empty_tuple();
+
+    while (n1 < count_of_iterations) {
+      int payload = in_msg_body~load_uint(8);
+      var payloadPreload = -1;
+
+      if (payload == 43) { ;; +
+        ;; reverse calculating
+        var (int sum) = make_reverse_calculating(cacheBetweenOperators);
+        ;; var (int len) = tlen(cacheNumbers);
+        ;; ~dump(len);
+        ;; ~dump(cacheNumbers);
+        ;; int a = cacheNumbers.at(len);
+        ;; int b = cacheNumbers.at(len - 1);
+        ;; ~dump(a + b);
+        ;; cacheNumbers~tpush(a + b);
+        cacheNumbers~tpush(sum);
+        cacheOperators~tpush(40);
+        
+        cacheBetweenOperators = empty_tuple();
+      }
+      if (payload == 45) { ;; -
+        var (int sum) = make_reverse_calculating(cacheBetweenOperators);
+
+        cacheNumbers~tpush(sum);
+        cacheOperators~tpush(41);
+        
+        cacheBetweenOperators = empty_tuple();
+      }
+
+      if (payload == 42) { ;; *
+        var (int sum) = make_reverse_calculating(cacheBetweenOperators);
+
+        cacheNumbers~tpush(sum);
+        cacheOperators~tpush(42);
+        
+        cacheBetweenOperators = empty_tuple();
+      }
+
+      if (payload == 47) { ;; /
+        var (int sum) = make_reverse_calculating(cacheBetweenOperators);
+
+        cacheNumbers~tpush(sum);
+        cacheOperators~tpush(43);
+        
+        cacheBetweenOperators = empty_tuple();
+      }
+
+      if (payload == 40) { ;; (
+        cacheOperators~tpush(44);
+        ;; cacheBetweenOperators = empty_tuple();
+      }
+
+      if (payload == 41) { ;; )
+        cacheOperators~tpush(45);
+        ;; cacheBetweenOperators = empty_tuple();
+      } 
+
+      if ((payload != 43) & (payload != 45) & (payload != 42) & (payload != 47) & (payload != 40) & (payload != 41)) {
+        cacheBetweenOperators~tpush(payload);
+
+
+        if (n1 == count_of_iterations - 2) {
+          payloadPreload = in_msg_body.preload_uint(8);
+          if (payloadPreload == 41) {
+            ;; if trailing ) here calculate and force quit
+            ;; 
+            ;; reverse calculating
+            var (int sum) = make_reverse_calculating(cacheBetweenOperators);
+
+            cacheNumbers~tpush(sum);
+          }
+        }
+
+        if (n1 == count_of_iterations - 1) {
+          var (int sum) = make_reverse_calculating(cacheBetweenOperators);
+
+          cacheNumbers~tpush(sum);
+        }
+      }
+
+      n1 += 1;
+    }
+
+
+    ;; 123 + 1
+    ;; + 1 <- 
+    ;; and push into cacheNumber
+    ;; DONE
+
+    var (int sum) = calc(cacheNumbers, cacheOperators, 0);
+    ~dump(sum);
+    ;; ~dump(cacheOperators);
+
+    ;; save_data(owner_address, number + payload);
+    return ();
+  }
+
+  throw(error::unknown_op);
+}
+
+;; =============== getters =============================
+
+slice owner_address() method_id {
+  var (owner_address, _) = load_data();
+  return owner_address;
+}
+
+(int) get_number() method_id {
+  var (_, number) = load_data();
+  return number;
+}

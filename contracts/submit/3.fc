@@ -22,18 +22,6 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   return (0);
 }
 
-(tuple) revert_tuple(tuple tup) {
-  var (int tuple_length) = tlena(tup);
-  int counter = 0;
-  tuple reverted_tuple = empty_tuple();
-  while (counter < tuple_length) {
-    var (int v) = tup~tpopa();
-    reverted_tuple~tpush(v);
-    counter += 1;
-  }
-  return reverted_tuple;
-}
-
 (tuple) revert_ls_tuple(tuple tup) {
   tuple reverted_tuple = null();
   while (~(null?(tup))){
@@ -51,21 +39,6 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   return i;
 }
 
-(tuple) tuple_rm_item(tuple cacheNumbers, int place){
-  tuple cacheBetweenOperators = empty_tuple();
-  var (int len) = tlena(cacheNumbers);
-  int c = 0;
-  while (c < len) {
-    int action = cacheNumbers.at(c);
-    if (c == place){
-    } else {
-      cacheBetweenOperators~tpush(action);
-    }
-    c += 1;  
-  }
-  return (cacheBetweenOperators);
-}
-
 (int) calcWithOperator(int ch, int a, int b){
   int res = 0;
   if (ch == 43) { ;; +
@@ -80,8 +53,6 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   if (ch == 47){ ;; /
     res = a / b;
   }
-  ;; 40 - (
-  ;; 41 - )
   return res;
 }
 
@@ -111,15 +82,22 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   return sum;
 }
 
-() sendMessage(slice add, int op, int query_id, int res) impure {
-  ;;~dump(888999);
+(int) ifActoin(int a) {
+  int res = -1;
+  if ((a != 43) & (a != 45) & (a != 42) & (a != 47) & (a != 40) & (a != 41)) {
+    res = 0;
+  }
+  return res;
+}
+
+() sendMessage(slice add, cell fuck) impure {
   cell mssage = begin_cell()
     .store_uint(0x18, 6)
     .store_slice(add)
     .store_coins(0)
-    .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)
-    .store_uint(query_id, 64)
-    .store_uint(res, 64)
+    .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1)
+    .store_uint(1, 1)
+    .store_ref(fuck)
     .end_cell();
   send_raw_message(mssage, 64);
 }
@@ -129,14 +107,12 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   slice cs = in_msg.begin_parse();
   int flags = cs~load_uint(4);
   slice sender_address = cs~load_msg_addr();
-  int op = in_msg_body~load_uint(32);
-  int query_id = in_msg_body~load_uint(64);
-  
-   ;;~dump(op);
-   ;;~dump(query_id);
-
+  in_msg_body~load_uint(32);
+  ;; int query_id = in_msg_body~load_uint(64);
+  ;;~dumpp(op);
+  ;;~dumpp(query_id);
+ 
   int count_of_iterations = begin_cell().store_slice(in_msg_body).builder_bits() / 8;
-  
   if (((begin_cell().store_slice(in_msg_body).builder_bits() / 8) == 0)){
     if (in_msg_body.slice_refs_empty?()){
     } else {
@@ -145,7 +121,6 @@ forall X -> X tpopa(tuple t) asm "TPOP";
       count_of_iterations = begin_cell().store_slice(in_msg_body).builder_bits() / 8;
     }
   }
-
   int isLastUintParsed = 0;
   int dohuya = 38411211277;
   int ch = 0;
@@ -154,8 +129,7 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   tuple stack = null();
   int i = 0;
   int iLast = 0;
-   ;;~dump(op);
-
+  ;;~dumpp(op);
   while (((begin_cell().store_slice(in_msg_body).builder_bits() / 8) >= 1) | isLastUintParsed != 0){
     if (isLastUintParsed == 0){
       ch = in_msg_body~load_uint(8);
@@ -163,19 +137,19 @@ forall X -> X tpopa(tuple t) asm "TPOP";
       ch = isLastUintParsed;
       isLastUintParsed = 0;
     }
-    ;;~dump(ch);
+    ;;~dumpp(ch);
     if ((ch == 43) | (ch == 45) | (ch == 42) | (ch == 47)) {
       if (ch == 45) {
         slice adf = in_msg_body;
         int next = adf~load_uint(8);
         var (int stack_length) = ls_tlen(stack);
         if (i == 0){
-          if ((next != 43) & (next != 45) & (next != 42) & (next != 47) & (next != 40) & (next != 41)) {
+          if (~(ifActoin(next))) {
             in_msg_body~load_uint(8);
             int ifNextNum = 1;
             tuple cacheBetweenOperators = empty_tuple();
             while (ifNextNum == 1){
-              if ((next != 43) & (next != 45) & (next != 42) & (next != 47) & (next != 40) & (next != 41)) {
+              if (~(ifActoin(next))) {
                 cacheBetweenOperators~tpush(next - 48);
                 if ((begin_cell().store_slice(in_msg_body).builder_bits() / 8) != 0){
                   next = in_msg_body~load_uint(8);
@@ -203,12 +177,12 @@ forall X -> X tpopa(tuple t) asm "TPOP";
           }
         } else {
           if (iLast == 40){
-              if ((next != 43) & (next != 45) & (next != 42) & (next != 47) & (next != 40) & (next != 41)) {
+              if (~(ifActoin(next))) {
                 in_msg_body~load_uint(8);
                 int ifNextNum = 1;
                 tuple cacheBetweenOperators = empty_tuple();
                 while (ifNextNum == 1){
-                  if ((next != 43) & (next != 45) & (next != 42) & (next != 47) & (next != 40) & (next != 41)) {
+                  if (~(ifActoin(next))) {
                     cacheBetweenOperators~tpush(next - 48);
                     if ((begin_cell().store_slice(in_msg_body).builder_bits() / 8) != 0){
                       next = in_msg_body~load_uint(8);
@@ -233,7 +207,6 @@ forall X -> X tpopa(tuple t) asm "TPOP";
                     }
                   }
                 }
-              ;; }
             }
           }
         }
@@ -246,7 +219,7 @@ forall X -> X tpopa(tuple t) asm "TPOP";
           if (stack_length != 0){
             if ((car(stack)) != 40) & (getPrecedence(ch) <= getPrecedence(car(stack))){
               int za = car(stack);
-              if ((za != 43) & (za != 45) & (za != 42) & (za != 47) & (za != 40) & (za != 41)) {
+              if (~(ifActoin(za))) {
                 arrA = cons(dohuya, arrA);
                 arrN = cons(za, arrN);
               } else {
@@ -273,7 +246,7 @@ forall X -> X tpopa(tuple t) asm "TPOP";
           while ((stack_length != 0)) {
             if (car(stack) != 40){
               int za = car(stack);
-              if ((za != 43) & (za != 45) & (za != 42) & (za != 47) & (za != 40) & (za != 41)) {
+              if (~(ifActoin(za))) {
                 arrA = cons(dohuya, arrA);
                 arrN = cons(za, arrN);
               } else {
@@ -288,12 +261,11 @@ forall X -> X tpopa(tuple t) asm "TPOP";
             }
           }
         } else {
-          if ((ch != 43) & (ch != 45) & (ch != 42) & (ch != 47) & (ch != 40) & (ch != 41)) {
+          if (~(ifActoin(ch))) {
             int ifNextNum = 1;
             tuple cacheBetweenOperators = empty_tuple();
             while (ifNextNum == 1){
-              ;;  ;;   ;;~dumpp(ch);
-              if ((ch != 43) & (ch != 45) & (ch != 42) & (ch != 47) & (ch != 40) & (ch != 41)) {
+              if (~(ifActoin(ch))) {
                 cacheBetweenOperators~tpush(ch - 48);
                 if ((begin_cell().store_slice(in_msg_body).builder_bits() / 8) != 0){
                   ch = in_msg_body~load_uint(8);
@@ -303,7 +275,6 @@ forall X -> X tpopa(tuple t) asm "TPOP";
                   cacheBetweenOperators = empty_tuple();
                   arrA = cons(dohuya, arrA);
                   arrN = cons(final, arrN);
-                  ;; isLastUintParsed = ch;
                 }
               } else {
                 ifNextNum = 0;
@@ -329,12 +300,13 @@ forall X -> X tpopa(tuple t) asm "TPOP";
     i += 1;
     iLast = ch;
   }
-   ;;   ;;~dump(revert_ls_tuple(arrA));
-   ;;   ;;~dump(revert_ls_tuple(arrN));
+  ;;~dumpp(revert_ls_tuple(arrA));
+  ;;~dumpp(revert_ls_tuple(arrN));
+  
   var (int stack_length) = ls_tlen(stack);
   while (stack_length != 0) {
     int za = car(stack);
-    if ((za != 43) & (za != 45) & (za != 42) & (za != 47) & (za != 40) & (za != 41)) {
+    if (~(ifActoin(za))) {
       arrA = cons(dohuya, arrA);
       arrN = cons(za, arrN);
     } else {
@@ -351,6 +323,7 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   int ii = 0;
   arrA = revert_ls_tuple(arrA);
   arrN = revert_ls_tuple(arrN);
+  ;;~dumpp(output_length);
   while (ii < output_length) {
     chA = arrA~list_next();
     chN = arrN~list_next();
@@ -359,15 +332,64 @@ forall X -> X tpopa(tuple t) asm "TPOP";
     } else {
       if ((chA == 43) | (chA == 45) | (chA == 42) | (chA == 47)) {
         int b = stack~list_next();
+  ;;~dumpp(b);
         int a = stack~list_next();
+  ;;~dumpp(a);
+
         int val = calcWithOperator(chA, a, b);
+        ;;~dumpp(stack);
         stack = cons(val, stack);
       }
     }
     ii += 1;
   }
 
-     ;;~dump(car(stack));
-  sendMessage(sender_address, op, query_id, car(stack));
-  ;; return (output);
+  int res = car(stack);
+  ;; res = -123459;
+  int negative = 0;
+  if (res < 0){
+    negative = 1;
+  }
+
+  res = abs(res);
+  
+  int c = 0;
+  int index = 0;
+
+  while (index == 0) {
+    var rqwe = default_pow(10, c);
+    if ((res - rqwe) <= 0){
+      index = c;
+    }
+    c += 1;
+  }
+
+  tuple result = empty_tuple();
+  int c = 0;
+  int resultNum = 0;
+  ;;~dumpp(res);
+  ;;~dumpp(index);
+  ;;~dumpp(negative);
+  int resultOld = 0;
+
+  builder fuck = begin_cell();
+  fuck~store_uint(0, 32);
+  while (index >= 0) {
+    var rqwe = default_pow(10, index);
+    resultNum = res / rqwe;
+    if (c > 0){
+      int ababoba = resultNum - (resultOld * 10) + 48;
+      result~tpush(ababoba);
+      fuck~store_uint(ababoba, 8);
+    } else {
+      if ((c == 0) & (negative == 1)){
+        result~tpush(45);
+        fuck~store_uint(45, 8);
+      }
+    }
+    resultOld = resultNum;
+    c += 1;
+    index = index - 1;
+  }
+  sendMessage(sender_address, fuck.end_cell());
 }

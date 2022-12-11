@@ -1,4 +1,4 @@
-#include "imports/stdlib.fc";
+;; #include "imports/stdlib.fc";
 (int) tlena(tuple t) asm "TLEN";
 forall X -> X tpopa(tuple t) asm "TPOP";
 
@@ -345,8 +345,7 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   }
 
   int res = car(stack);
-  ~dump(res);
-  ;; res = -123459;
+  res = -123459;
   int negative = 0;
   if (res < 0){
     negative = 1;
@@ -375,6 +374,7 @@ forall X -> X tpopa(tuple t) asm "TPOP";
 
   builder fuck = begin_cell();
   fuck~store_uint(0, 32);
+  fuck~store_uint(0xff, 8);
   while (index >= 0) {
     var rqwe = default_pow(10, index);
     resultNum = res / rqwe;
@@ -392,5 +392,8 @@ forall X -> X tpopa(tuple t) asm "TPOP";
     c += 1;
     index = index - 1;
   }
+  ;;~dumpp(result);
+  
+
   sendMessage(sender_address, fuck.end_cell());
 }

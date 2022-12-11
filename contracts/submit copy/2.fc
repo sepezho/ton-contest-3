@@ -1,0 +1,124 @@
+(int) tlena(tuple t) asm "TLEN";
+forall X -> X tpopa(tuple t) asm "TPOP";
+
+() sendMessage(cell data) impure {
+  slice pdata = data.begin_parse();
+  (int score, int value, cell msg) = (pdata~load_uint(32), pdata~load_coins(), pdata~load_ref());
+  cell mssage = begin_cell()
+    .store_uint(0x18, 6)
+    .store_slice(my_address())
+    .store_coins(value)
+    .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1)
+    .store_uint(1, 1)
+    .store_ref(msg)
+    .end_cell();
+  send_raw_message(mssage, 0);
+}
+ 
+(tuple) tuplermitem (tuple tpl, int place, int placed) {
+  tuple rtpl = empty_tuple();
+  int lena = tlena(tpl);
+  int c = 0;
+  while (c < lena) {
+    int action = tpl.at(c);
+    if ((c != place) & (c != placed)) {
+      rtpl~tpush(action);
+    }
+    c += 1;  
+  }
+  return (rtpl);
+}
+
+(tuple) reverse_taaauple (tuple t) {
+  tuple r = empty_tuple();
+  while (tlena(t) > 0) {
+    r~tpush(t~tpopa());
+  }
+  return (r);
+}
+
+;; testable
+() recv_internal (slice in_msg_body) impure {
+  cell msgCell = begin_cell().store_slice(in_msg_body).end_cell();
+  cell data = get_data();
+  slice loadItemNum = data.begin_parse();
+  int loadItemNuma = 0;
+  if (get_data().begin_parse().slice_empty?()) {
+  } else {
+    loadItemNuma = loadItemNum~load_uint(32);
+  }
+  builder da = begin_cell().store_uint(loadItemNuma + 1,32).store_ref(data).store_ref(msgCell);
+  data = da.end_cell();
+  int depth = loadItemNuma + 1;
+  tuple store = empty_tuple().tpush(data);
+  int c = 0;
+  while (c < depth - 1) {
+    slice ref = store.at(c).begin_parse();
+    ref~load_uint(32);
+    store~tpush(ref~load_ref());
+    c += 1;
+  }
+  int len = tlena(store);
+  if (len == 12){
+    int cs = 0;
+    int maxScore = 0;
+    int lowestVal = 0;
+    int valueId = 0;
+    int scoreId = 0;
+    while (cs < 12) {
+      slice dataS = store.at(cs).begin_parse();
+      dataS~load_uint(32);
+      cell ref1 = dataS~load_ref();
+      cell ref2 = dataS~load_ref();
+      slice dataSS = ref2.begin_parse();
+      (int score, int value) = (dataSS~load_uint(32), dataSS~load_coins());
+      if (score > maxScore) {
+        maxScore = score;
+        scoreId = cs;
+      }
+      if (cs == 0){
+        lowestVal = value;
+      } else {
+        if (value < lowestVal) {
+          lowestVal = value;
+          valueId = cs;
+        }
+      }
+      cs += 1;
+    }
+    slice scoreCell = store.at(scoreId).begin_parse();
+    scoreCell~load_uint(32);
+    scoreCell~load_ref(); 
+    cell scoreCellRef2 = scoreCell~load_ref(); 
+    sendMessage(scoreCellRef2);
+    tuple newstore = tuplermitem(store, scoreId, 99);
+    if (valueId != scoreId){
+      slice valCell = store.at(valueId).begin_parse();
+      valCell~load_uint(32);
+      valCell~load_ref(); 
+      cell valCellRef2 = valCell~load_ref(); 
+      sendMessage(valCellRef2);
+      newstore = tuplermitem(store, valueId, scoreId);
+    } 
+    int newlen = tlena(newstore);
+    int cal = 0;
+    tuple realnewlen = empty_tuple();
+    while (cal < newlen){
+      slice begpa = newstore.at(cal).begin_parse();
+      begpa~load_uint(32);
+      cell valCellResf1 = begpa~load_ref(); 
+      cell valCellResf2 = begpa~load_ref();
+      realnewlen~tpush(valCellResf2);
+      cal += 1;
+    }
+    int ca = 0;
+    cell newcell = begin_cell().end_cell();
+    while (ca < newlen){
+      cell begpa = realnewlen.at(ca);
+      newcell = begin_cell().store_uint(ca + 1,32).store_ref(newcell).store_ref(begpa).end_cell();
+      ca += 1;
+    }
+    data = newcell;
+  }
+  set_data(data);
+}

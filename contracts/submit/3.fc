@@ -2,16 +2,6 @@
 (int) tlena(tuple t) asm "TLEN";
 forall X -> X tpopa(tuple t) asm "TPOP";
 
-{-
-  Contract receives internal message with text comment (https://ton.org/docs/develop/smart-contracts/guidelines/internal-messages)
-  which contains arithmetic expression containing integer numbers in decimal representation and operations (+-*/).
-  All values (including intermediate) fit 256 bit. Contract should respond (coins = 0, mode = 64) with correct
-  answer encoded as text comment back.
-  It is guaranteed that all tests contain a valid algebraic equations.
-  Division result should be rounded down. It is guaranteed that tests do not contain division by zero.
--}
-
-
 (int) getPrecedence(int ch) {
   if ((ch == 43) | (ch == 45)){
     return (1);
@@ -105,22 +95,18 @@ forall X -> X tpopa(tuple t) asm "TPOP";
 ;; testable
 () recv_internal (cell in_msg, slice in_msg_body) {
   slice cs = in_msg.begin_parse();
-  int flags = cs~load_uint(4);
+  cs~load_uint(4);
   slice sender_address = cs~load_msg_addr();
   in_msg_body~load_uint(32);
-  ;; int query_id = in_msg_body~load_uint(64);
-  ;;~dumpp(op);
-  ;;~dumpp(query_id);
- 
   int count_of_iterations = begin_cell().store_slice(in_msg_body).builder_bits() / 8;
-  if (((begin_cell().store_slice(in_msg_body).builder_bits() / 8) == 0)){
-    if (in_msg_body.slice_refs_empty?()){
-    } else {
-      cell ref = in_msg_body~load_ref();
-      in_msg_body = ref.begin_parse();
-      count_of_iterations = begin_cell().store_slice(in_msg_body).builder_bits() / 8;
-    }
-  }
+  ;; if (((begin_cell().store_slice(in_msg_body).builder_bits() / 8) == 0)){
+  ;;   if (in_msg_body.slice_refs_empty?()){
+  ;;   } else {
+  ;;     cell ref = in_msg_body~load_ref();
+  ;;     in_msg_body = ref.begin_parse();
+  ;;     count_of_iterations = begin_cell().store_slice(in_msg_body).builder_bits() / 8;
+  ;;   }
+  ;; }
   int isLastUintParsed = 0;
   int dohuya = 38411211277;
   int ch = 0;
@@ -129,7 +115,6 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   tuple stack = null();
   int i = 0;
   int iLast = 0;
-  ;;~dumpp(op);
   while (((begin_cell().store_slice(in_msg_body).builder_bits() / 8) >= 1) | isLastUintParsed != 0){
     if (isLastUintParsed == 0){
       ch = in_msg_body~load_uint(8);
@@ -137,7 +122,7 @@ forall X -> X tpopa(tuple t) asm "TPOP";
       ch = isLastUintParsed;
       isLastUintParsed = 0;
     }
-    ;;~dumpp(ch);
+    ;;;;~dumpmpp(ch);
     if ((ch == 43) | (ch == 45) | (ch == 42) | (ch == 47)) {
       if (ch == 45) {
         slice adf = in_msg_body;
@@ -300,8 +285,8 @@ forall X -> X tpopa(tuple t) asm "TPOP";
     i += 1;
     iLast = ch;
   }
-  ;;~dumpp(revert_ls_tuple(arrA));
-  ;;~dumpp(revert_ls_tuple(arrN));
+  ;;;;~dumpmpp(revert_ls_tuple(arrA));
+  ;;;;~dumpmpp(revert_ls_tuple(arrN));
   
   var (int stack_length) = ls_tlen(stack);
   while (stack_length != 0) {
@@ -323,7 +308,7 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   int ii = 0;
   arrA = revert_ls_tuple(arrA);
   arrN = revert_ls_tuple(arrN);
-  ;;~dumpp(output_length);
+  ;;;;~dumpmpp(output_length);
   while (ii < output_length) {
     chA = arrA~list_next();
     chN = arrN~list_next();
@@ -332,12 +317,12 @@ forall X -> X tpopa(tuple t) asm "TPOP";
     } else {
       if ((chA == 43) | (chA == 45) | (chA == 42) | (chA == 47)) {
         int b = stack~list_next();
-  ;;~dumpp(b);
+  ;;;;~dumpmpp(b);
         int a = stack~list_next();
-  ;;~dumpp(a);
+  ;;;;~dumpmpp(a);
 
         int val = calcWithOperator(chA, a, b);
-        ;;~dumpp(stack);
+        ;;;;~dumpmpp(stack);
         stack = cons(val, stack);
       }
     }
@@ -345,6 +330,7 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   }
 
   int res = car(stack);
+  ;;~dumpmp(res);
   ;; res = -123459;
   int negative = 0;
   if (res < 0){
@@ -367,9 +353,9 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   tuple result = empty_tuple();
   int c = 0;
   int resultNum = 0;
-  ;;~dumpp(res);
-  ;;~dumpp(index);
-  ;;~dumpp(negative);
+  ;;;;~dumpmpp(res);
+  ;;;;~dumpmpp(index);
+  ;;;;~dumpmpp(negative);
   int resultOld = 0;
 
   builder fuck = begin_cell();

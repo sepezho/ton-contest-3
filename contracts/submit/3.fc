@@ -99,14 +99,6 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   slice sender_address = cs~load_msg_addr();
   in_msg_body~load_uint(32);
   int count_of_iterations = begin_cell().store_slice(in_msg_body).builder_bits() / 8;
-  ;; if (((begin_cell().store_slice(in_msg_body).builder_bits() / 8) == 0)){
-  ;;   if (in_msg_body.slice_refs_empty?()){
-  ;;   } else {
-  ;;     cell ref = in_msg_body~load_ref();
-  ;;     in_msg_body = ref.begin_parse();
-  ;;     count_of_iterations = begin_cell().store_slice(in_msg_body).builder_bits() / 8;
-  ;;   }
-  ;; }
   int isLastUintParsed = 0;
   int dohuya = 38411211277;
   int ch = 0;
@@ -122,7 +114,6 @@ forall X -> X tpopa(tuple t) asm "TPOP";
       ch = isLastUintParsed;
       isLastUintParsed = 0;
     }
-    ;;;;~dumpmpp(ch);
     if ((ch == 43) | (ch == 45) | (ch == 42) | (ch == 47)) {
       if (ch == 45) {
         slice adf = in_msg_body;
@@ -285,9 +276,8 @@ forall X -> X tpopa(tuple t) asm "TPOP";
     i += 1;
     iLast = ch;
   }
-  ;;;;~dumpmpp(revert_ls_tuple(arrA));
-  ;;;;~dumpmpp(revert_ls_tuple(arrN));
-  
+  ~dump(revert_ls_tuple(arrA));
+  ~dump(revert_ls_tuple(arrN));
   var (int stack_length) = ls_tlen(stack);
   while (stack_length != 0) {
     int za = car(stack);
@@ -308,7 +298,6 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   int ii = 0;
   arrA = revert_ls_tuple(arrA);
   arrN = revert_ls_tuple(arrN);
-  ;;;;~dumpmpp(output_length);
   while (ii < output_length) {
     chA = arrA~list_next();
     chN = arrN~list_next();
@@ -317,31 +306,22 @@ forall X -> X tpopa(tuple t) asm "TPOP";
     } else {
       if ((chA == 43) | (chA == 45) | (chA == 42) | (chA == 47)) {
         int b = stack~list_next();
-  ;;;;~dumpmpp(b);
         int a = stack~list_next();
-  ;;;;~dumpmpp(a);
-
         int val = calcWithOperator(chA, a, b);
-        ;;;;~dumpmpp(stack);
         stack = cons(val, stack);
       }
     }
     ii += 1;
   }
-
   int res = car(stack);
-  ;;~dumpmp(res);
-  ;; res = -123459;
+  ~dump(res);
   int negative = 0;
   if (res < 0){
     negative = 1;
   }
-
   res = abs(res);
-  
   int c = 0;
   int index = 0;
-
   while (index == 0) {
     var rqwe = default_pow(10, c);
     if ((res - rqwe) <= 0){
@@ -349,15 +329,10 @@ forall X -> X tpopa(tuple t) asm "TPOP";
     }
     c += 1;
   }
-
   tuple result = empty_tuple();
   int c = 0;
   int resultNum = 0;
-  ;;;;~dumpmpp(res);
-  ;;;;~dumpmpp(index);
-  ;;;;~dumpmpp(negative);
   int resultOld = 0;
-
   builder fuck = begin_cell();
   fuck~store_uint(0, 32);
   while (index >= 0) {

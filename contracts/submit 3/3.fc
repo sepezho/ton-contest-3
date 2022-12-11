@@ -1,4 +1,4 @@
-#include "imports/stdlib.fc";
+;; #include "imports/stdlib.fc";
 (int) tlena(tuple t) asm "TLEN";
 forall X -> X tpopa(tuple t) asm "TPOP";
 
@@ -24,7 +24,7 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   int i = 0;
   while (~(null?(tup))){
     tup~list_next();
-    
+    i += 1;
   }
   return i;
 }
@@ -74,7 +74,7 @@ forall X -> X tpopa(tuple t) asm "TPOP";
 
 (int) ifActoin(int a) {
   int res = -1;
-  if ((a != 43) & (a != 45) & (a != 42) & (a != 47) & (a != 41)) {
+  if ((a != 43) & (a != 45) & (a != 42) & (a != 47) & (a != 40) & (a != 41)) {
     res = 0;
   }
   return res;
@@ -99,7 +99,6 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   slice sender_address = cs~load_msg_addr();
   in_msg_body~load_uint(32);
   int count_of_iterations = begin_cell().store_slice(in_msg_body).builder_bits() / 8;
-  ~dump(count_of_iterations);
   int isLastUintParsed = 0;
   int dohuya = 38411211277;
   int ch = 0;
@@ -108,8 +107,6 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   tuple stack = null();
   int i = 0;
   int iLast = 0;
-  slice oldCell = in_msg_body;
-  slice csAAAAAASAAA = begin_cell().end_cell().begin_parse();
   while (((begin_cell().store_slice(in_msg_body).builder_bits() / 8) >= 1) | isLastUintParsed != 0){
     if (isLastUintParsed == 0){
       ch = in_msg_body~load_uint(8);
@@ -117,22 +114,12 @@ forall X -> X tpopa(tuple t) asm "TPOP";
       ch = isLastUintParsed;
       isLastUintParsed = 0;
     }
-        (csAAAAAASAAA, int x) = oldCell.load_uint(8);
-  ~dump(x);
-  ~dump(ch);
-    ;;       ~dump(0);
-          ~dump(arrN);
-;; 
     if ((ch == 43) | (ch == 45) | (ch == 42) | (ch == 47)) {
       if (ch == 45) {
         slice adf = in_msg_body;
         int next = adf~load_uint(8);
-        ;; ~dump(next);
         var (int stack_length) = ls_tlen(stack);
-        (csAAAAAASAAA, int x) = oldCell.load_uint(8);
-        if (((begin_cell().store_slice(in_msg_body).builder_bits() / 8) == count_of_iterations ) | (x == 40)){
-        ~dump(188888888);
-          
+        if (i == 0){
           if (~(ifActoin(next))) {
             in_msg_body~load_uint(8);
             int ifNextNum = 1;
@@ -146,12 +133,7 @@ forall X -> X tpopa(tuple t) asm "TPOP";
                   int final = make_reverse_calculating(cacheBetweenOperators);
                   cacheBetweenOperators = empty_tuple();
                   arrA = cons(dohuya, arrA);
-          ~dump(arrN);
-          ~dump(1);
-
                   arrN = cons(0 - final, arrN);
-                       
-                  
                   ifNextNum = 0;
                   if (in_msg_body.slice_refs_empty?()){
                     isLastUintParsed = next;
@@ -161,36 +143,17 @@ forall X -> X tpopa(tuple t) asm "TPOP";
                 int final = make_reverse_calculating(cacheBetweenOperators);
                 cacheBetweenOperators = empty_tuple();
                 arrA = cons(dohuya, arrA);
-          ~dump(arrN);
-
-          ~dump(2);
-          ~dump(final);
-
                 arrN = cons(0 - final, arrN);
-                     
-                  
                 ifNextNum = 0;
                 if (in_msg_body.slice_refs_empty?()){
                   isLastUintParsed = next;
                 }
               }
             }
-
-          } else {
-            arrA = cons(45, arrA);
-            arrN = cons(dohuya, arrN);
-                 
-                  
           }
         } else {
-          ;; ~dump(iLast);
-        (csAAAAAASAAA, int x) = oldCell.load_uint(8);
-
-          if ((x == 43) | (x == 45) | (x == 42) | (x == 47) | (x == 40)){
-          ~dump(9999999999999999999991);
-
+          if (iLast == 40){
               if (~(ifActoin(next))) {
-                ;; oldCell = in_msg_body;
                 in_msg_body~load_uint(8);
                 int ifNextNum = 1;
                 tuple cacheBetweenOperators = empty_tuple();
@@ -198,19 +161,12 @@ forall X -> X tpopa(tuple t) asm "TPOP";
                   if (~(ifActoin(next))) {
                     cacheBetweenOperators~tpush(next - 48);
                     if ((begin_cell().store_slice(in_msg_body).builder_bits() / 8) != 0){
-                      ;; oldCell = in_msg_body;
                       next = in_msg_body~load_uint(8);
                     } else {
                       int final = make_reverse_calculating(cacheBetweenOperators);
                       cacheBetweenOperators = empty_tuple();
                       arrA = cons(dohuya, arrA);
-          ;; ~dump(arrN);
-
-          ;; ~dump(final);
-          ~dump(3);
                       arrN = cons(0 - final, arrN);
-                           
-                  
                       ifNextNum = 0;
                       if (in_msg_body.slice_refs_empty?()){
                         isLastUintParsed = next;
@@ -220,12 +176,7 @@ forall X -> X tpopa(tuple t) asm "TPOP";
                     int final = make_reverse_calculating(cacheBetweenOperators);
                     cacheBetweenOperators = empty_tuple();
                     arrA = cons(dohuya, arrA);
-          ~dump(arrN);
-          ~dump(final);
-
                     arrN = cons(0 - final, arrN);
-                         
-                  
                     ifNextNum = 0;
                     if (in_msg_body.slice_refs_empty?()){
                       isLastUintParsed = next;
@@ -235,9 +186,6 @@ forall X -> X tpopa(tuple t) asm "TPOP";
             }
           }
         }
-          ~dump(9999999999999999999992);
-            oldCell = in_msg_body;
-
       }
       var (int stack_length) = ls_tlen(stack);
       if (stack_length != 0){
@@ -249,20 +197,10 @@ forall X -> X tpopa(tuple t) asm "TPOP";
               int za = car(stack);
               if (~(ifActoin(za))) {
                 arrA = cons(dohuya, arrA);
-          ~dump(arrN);
-          ~dump(5);
-
                 arrN = cons(za, arrN);
-                
-        ;; iLast = za;
               } else {
                 arrA = cons(za, arrA);
-          ~dump(6);
-          ~dump(arrN);
-
                 arrN = cons(dohuya, arrN);
-                
-        ;; iLast = za;
               }
               stack~list_next();
               stack_length = ls_tlen(stack);
@@ -278,7 +216,6 @@ forall X -> X tpopa(tuple t) asm "TPOP";
     } else {
       if (ch == 40){
         stack = cons(ch, stack);
-    
       } else {
         if (ch == 41){
           int stack_length = ls_tlen(stack);
@@ -298,80 +235,52 @@ forall X -> X tpopa(tuple t) asm "TPOP";
               stack~list_next();
               stack_length = ls_tlen(stack);
             }
-          
           }
         } else {
-          ~dump(9999999999999999999994);
-          ~dump(arrN);
           if (~(ifActoin(ch))) {
             int ifNextNum = 1;
             tuple cacheBetweenOperators = empty_tuple();
             while (ifNextNum == 1){
               if (~(ifActoin(ch))) {
                 cacheBetweenOperators~tpush(ch - 48);
-
                 if ((begin_cell().store_slice(in_msg_body).builder_bits() / 8) != 0){
-            ;; oldCell = in_msg_body;
-          ~dump(9999999999999999999995);
                   ch = in_msg_body~load_uint(8);
-          ~dump(9999999999999999999996);
                 } else {
                   ifNextNum = 0;
                   int final = make_reverse_calculating(cacheBetweenOperators);
                   cacheBetweenOperators = empty_tuple();
                   arrA = cons(dohuya, arrA);
                   arrN = cons(final, arrN);
-                  
-                  
                 }
               } else {
-          ~dump(9999999999999999999997);
                 ifNextNum = 0;
                 int final = make_reverse_calculating(cacheBetweenOperators);
                 cacheBetweenOperators = empty_tuple();
                 arrA = cons(dohuya, arrA);
                 arrN = cons(final, arrN);
-                
-          ~dump(9999999999999999999998);
-                
                 isLastUintParsed = ch;
               }
             }
-            oldCell = in_msg_body;
-          ~dump(99999999999999999999919);
-
           }
         }
       }
     }
-
     if (((begin_cell().store_slice(in_msg_body).builder_bits() / 8) == 0)){
-          ~dump(99999999999999999999920);
       if (in_msg_body.slice_refs_empty?()){
-          ~dump(99999999999999999999922);
-          ~dump((arrA));
-~dump((arrN));
       } else {
-          ~dump(99999999999999999999921);
         cell ref = in_msg_body~load_ref();
         in_msg_body = ref.begin_parse();
         count_of_iterations = begin_cell().store_slice(in_msg_body).builder_bits() / 8;
-        
-        
       }
     }
-     
-        i += 1;
-        iLast = ch;
-      oldCell = in_msg_body;
-
+    i += 1;
+    iLast = ch;
   }
-
+  ~dump(revert_ls_tuple(arrA));
+  ~dump(revert_ls_tuple(arrN));
   var (int stack_length) = ls_tlen(stack);
-
   while (stack_length != 0) {
     int za = car(stack);
-    ~dump(za);
     if (~(ifActoin(za))) {
       arrA = cons(dohuya, arrA);
       arrN = cons(za, arrN);
@@ -389,9 +298,6 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   int ii = 0;
   arrA = revert_ls_tuple(arrA);
   arrN = revert_ls_tuple(arrN);
-  ~dump(output_length);
-~dump((arrA));
-~dump((arrN));
   while (ii < output_length) {
     chA = arrA~list_next();
     chN = arrN~list_next();
@@ -400,10 +306,7 @@ forall X -> X tpopa(tuple t) asm "TPOP";
     } else {
       if ((chA == 43) | (chA == 45) | (chA == 42) | (chA == 47)) {
         int b = stack~list_next();
-        int a = 0;
-        if (~(null?(stack))) {
-          a = stack~list_next();
-        }
+        int a = stack~list_next();
         int val = calcWithOperator(chA, a, b);
         stack = cons(val, stack);
       }

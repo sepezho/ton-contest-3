@@ -31,14 +31,14 @@ describe("Calculator on TON Blockchain Test", () => {
     let math =
       "1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1"; // 44
     //
-    math = "2*(4-100)";
+    math = "(((((-5-1)+1)+1)+1)+1)";
     console.log(math.length);
     const sendIncrement = await contract.sendInternalMessage(
       internalMessage({
         from: randomAddress("notowner"),
         body: main.calculate({
           // payload: math,
-          // payload: "2*(4-100)", // -192 done
+          payload: "2*(4-100)", // -192 done
           // payload: "3*5+9/3", // 18 done
           // payload: "100-20*(4*6/3)", // -60 done
           // payload: "(135+75)/(14*5)", // 3 done
@@ -49,7 +49,7 @@ describe("Calculator on TON Blockchain Test", () => {
           // payload: "128-6*8/16", // 125 done
           // payload: "((10+3)-3*4)", // 1 done
           // payload: "(15/4)+(4/3)", // 4 done
-          payload: "100-(2)*(5)",
+          // payload: "-8/2*-4+10--1",
           // payload: "((1))+((2))-((3+9))*(((4)))/(5)", // -8 done
           // payload: "-5*((-6-2)*(0-3)-(-8-2))", // -170  --- failed
           // payload: "1*(-2-4*7+18)", // 0 -- failed
@@ -57,14 +57,15 @@ describe("Calculator on TON Blockchain Test", () => {
         }),
       }) as any
     );
-
+    const logs = sendIncrement.logs
+      .split(`\n`)
+      .filter((e) => e.includes("#DEBUG#") || e.includes("error"))
+      .map((e) => (e.includes("#DEBUG") ? e.split("#DEBUG")[1] : e.split("error")[1]))
+      .join(`\n`);
     console.log(`\n---------------\n`);
     console.log(
-      sendIncrement.logs
-        .split(`\n`)
-        .filter((e) => e.includes("#DEBUG#") || e.includes("error"))
-        .map((e) => (e.includes("#DEBUG") ? e.split("#DEBUG")[1] : e.split("error")[1]))
-        .join(`\n`)
+      //@ts-ignore
+      logs.replaceAll("38411211277", "_d_")
     );
     // console.log(sendIncrement.result);
     // console.log(sendIncrement.actionList[0].message.body);

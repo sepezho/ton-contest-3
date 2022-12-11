@@ -44,5 +44,5 @@ export function encodeOffChainContent(content: string) {
 
 export function calculate(params: { payload: string }): Cell {
   return encodeOffChainContent("8888" + params.payload);
-  // return beginCell().storeUint(0x228cfdb9, 32).storeSlice(encodeOffChainContent(params.payload).beginParse()).endCell();
+  // return beginCell().storeUint(0x228cfdb9, 32).store(encodeOffChainContent(params.payload).beginParse()).endCell();
 }

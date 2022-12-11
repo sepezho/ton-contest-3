@@ -28,19 +28,21 @@ describe("Calculator on TON Blockchain Test", () => {
 
   it("should not drop", async () => {
     // increment
-
+    let math = "(1-1-1+2)+(2+((28-10)*2+2))+(1-1-1+2)+(1-1-1+2)+(1-1-1+2)"; // 44
+    // math = "2*(4-100)";
+    console.log(math.length);
     const sendIncrement = await contract.sendInternalMessage(
       internalMessage({
         from: randomAddress("notowner"),
         body: main.calculate({
-          // payload: "(1-1-1+2)+(2+((28-10)*2+2))",
-          // payload: "2*(4-100)", // -192 done
+          // payload: math,
+          payload: "2*(4-100)", // -192 done
           // payload: "3*5+9/3", // 18 done
           // payload: "100-20*(4*6/3)", // -60 done
           // payload: "(135+75)/(14*5)", // 3 done
           // payload: "120-60/5*5", // 60 done
           // payload: "330/(65-50)", // 22 done
-          payload: "3*6+24/4", // 24 done
+          // payload: "3*6+24/4", // 24 done
           // payload: "(4-7)*(5+3)", // -24 done
           // payload: "128-6*8/16", // 125 done
           // payload: "-5*((-6-2)*(0-3)-(-8-2))", // -170  --- failed
@@ -64,6 +66,7 @@ describe("Calculator on TON Blockchain Test", () => {
     );
     console.log(sendIncrement.gas_consumed);
     console.log(`\n---------------\n`);
+    console.log(math.length);
   });
 });
 

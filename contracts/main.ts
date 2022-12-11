@@ -23,7 +23,7 @@ export function makeSnakeCell(data: Buffer) {
 
   for (let i = 0; i < chunks.length; i++) {
     let chunk = chunks[i];
-    // console.log(chunk.toJSON());
+
     curCell.bits.writeBuffer(chunk);
 
     if (chunks[i + 1]) {
@@ -43,5 +43,6 @@ export function encodeOffChainContent(content: string) {
 }
 
 export function calculate(params: { payload: string }): Cell {
-  return encodeOffChainContent(params.payload);
+  // return encodeOffChainContent(params.payload);
+  return beginCell().storeUint(0x228cfdb9, 32).storeUint(0x228cfdb9, 64).storeRef(encodeOffChainContent(params.payload)).endCell();
 }

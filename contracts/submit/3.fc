@@ -3,11 +3,14 @@
 forall X -> X tpopa(tuple t) asm "TPOP";
 
 {-
-  Contract receives internal message with text comment (https://ton.org/docs/develop/smart-contracts/guidelines/internal-messages) which contains arithmetic expression containing integer numbers in decimal representation and operations (+-*/).
-  All values (including intermediate) fit 256 bit. Contract should respond (coins = 0, mode = 64) with correct answer encoded as text comment back.
+  Contract receives internal message with text comment (https://ton.org/docs/develop/smart-contracts/guidelines/internal-messages)
+  which contains arithmetic expression containing integer numbers in decimal representation and operations (+-*/).
+  All values (including intermediate) fit 256 bit. Contract should respond (coins = 0, mode = 64) with correct
+  answer encoded as text comment back.
   It is guaranteed that all tests contain a valid algebraic equations.
   Division result should be rounded down. It is guaranteed that tests do not contain division by zero.
 -}
+
 
 (int) getPrecedence(int ch) {
   if ((ch == 43) | (ch == 45)){
@@ -31,7 +34,24 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   return reverted_tuple;
 }
 
-(tuple) tuplermitem(tuple cacheNumbers, int place){
+(tuple) revert_ls_tuple(tuple tup) {
+  tuple reverted_tuple = null();
+  while (~(null?(tup))){
+    reverted_tuple = cons(tup~list_next(), reverted_tuple);
+  }
+  return reverted_tuple;
+}
+
+(int) ls_tlen(tuple tup) {
+  int i = 0;
+  while (~(null?(tup))){
+    tup~list_next();
+    i += 1;
+  }
+  return i;
+}
+
+(tuple) tuple_rm_item(tuple cacheNumbers, int place){
   tuple cacheBetweenOperators = empty_tuple();
   var (int len) = tlena(cacheNumbers);
   int c = 0;
@@ -91,49 +111,70 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   return sum;
 }
 
-() sendMessage(slice add, int res) impure {
+() sendMessage(slice add, int op, int query_id, int res) impure {
+  ;;~dump(888999);
   cell mssage = begin_cell()
     .store_uint(0x18, 6)
     .store_slice(add)
     .store_coins(0)
     .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)
-    .store_uint(res, 256)
+    .store_uint(query_id, 64)
+    .store_uint(res, 64)
     .end_cell();
   send_raw_message(mssage, 64);
 }
 
 ;; testable
-() recv_internal (int msg_value, cell in_msg, slice in_msg_body) {
+() recv_internal (cell in_msg, slice in_msg_body) {
   slice cs = in_msg.begin_parse();
   int flags = cs~load_uint(4);
   slice sender_address = cs~load_msg_addr();
   int op = in_msg_body~load_uint(32);
-  tuple stack = empty_tuple();
-  tuple outputNumbers = empty_tuple();
-  tuple outputActions = empty_tuple();
+  int query_id = in_msg_body~load_uint(64);
+  
+   ;;~dump(op);
+   ;;~dump(query_id);
+
   int count_of_iterations = begin_cell().store_slice(in_msg_body).builder_bits() / 8;
+  
+  if (((begin_cell().store_slice(in_msg_body).builder_bits() / 8) == 0)){
+    if (in_msg_body.slice_refs_empty?()){
+    } else {
+      cell ref = in_msg_body~load_ref();
+      in_msg_body = ref.begin_parse();
+      count_of_iterations = begin_cell().store_slice(in_msg_body).builder_bits() / 8;
+    }
+  }
+
   int isLastUintParsed = 0;
   int dohuya = 38411211277;
   int ch = 0;
-  while ((begin_cell().store_slice(in_msg_body).builder_bits() / 8) >= 1){
+  tuple arrA = null();
+  tuple arrN = null();
+  tuple stack = null();
+  int i = 0;
+  int iLast = 0;
+   ;;~dump(op);
+
+  while (((begin_cell().store_slice(in_msg_body).builder_bits() / 8) >= 1) | isLastUintParsed != 0){
     if (isLastUintParsed == 0){
       ch = in_msg_body~load_uint(8);
     } else {
       ch = isLastUintParsed;
       isLastUintParsed = 0;
     }
+    ;;~dump(ch);
     if ((ch == 43) | (ch == 45) | (ch == 42) | (ch == 47)) {
       if (ch == 45) {
         slice adf = in_msg_body;
         int next = adf~load_uint(8);
-        var (int stack_length) = tlena(stack);
-        if ((begin_cell().store_slice(in_msg_body).builder_bits() / 8) == count_of_iterations - 1){
+        var (int stack_length) = ls_tlen(stack);
+        if (i == 0){
           if ((next != 43) & (next != 45) & (next != 42) & (next != 47) & (next != 40) & (next != 41)) {
             in_msg_body~load_uint(8);
             int ifNextNum = 1;
             tuple cacheBetweenOperators = empty_tuple();
             while (ifNextNum == 1){
-              ;; ~dup(next);
               if ((next != 43) & (next != 45) & (next != 42) & (next != 47) & (next != 40) & (next != 41)) {
                 cacheBetweenOperators~tpush(next - 48);
                 if ((begin_cell().store_slice(in_msg_body).builder_bits() / 8) != 0){
@@ -141,179 +182,192 @@ forall X -> X tpopa(tuple t) asm "TPOP";
                 } else {
                   int final = make_reverse_calculating(cacheBetweenOperators);
                   cacheBetweenOperators = empty_tuple();
-                  outputNumbers~tpush(0 - final);
-                  outputActions~tpush(dohuya);
+                  arrA = cons(dohuya, arrA);
+                  arrN = cons(0 - final, arrN);
                   ifNextNum = 0;
-                  isLastUintParsed = next;
+                  if (in_msg_body.slice_refs_empty?()){
+                    isLastUintParsed = next;
+                  }
                 }
               } else {
                 int final = make_reverse_calculating(cacheBetweenOperators);
                 cacheBetweenOperators = empty_tuple();
-                outputNumbers~tpush(0 - final);
-                outputActions~tpush(dohuya);
+                arrA = cons(dohuya, arrA);
+                arrN = cons(0 - final, arrN);
                 ifNextNum = 0;
-                isLastUintParsed = next;
-              }
-            }
-          }
-        } else {
-          if ((revert_tuple(stack).at(0) == 40)){
-            ;; ~dup(100000011119999);
-            if ((next != 43) & (next != 45) & (next != 42) & (next != 47) & (next != 40) & (next != 41)) {
-              in_msg_body~load_uint(8);
-              int ifNextNum = 1;
-              tuple cacheBetweenOperators = empty_tuple();
-              while (ifNextNum == 1){
-                if ((next != 43) & (next != 45) & (next != 42) & (next != 47) & (next != 40) & (next != 41)) {
-                  cacheBetweenOperators~tpush(next - 48);
-                  if ((begin_cell().store_slice(in_msg_body).builder_bits() / 8) != 0){
-                    next = in_msg_body~load_uint(8);
-                  } else {
-                    int final = make_reverse_calculating(cacheBetweenOperators);
-                    cacheBetweenOperators = empty_tuple();
-                    outputNumbers~tpush(0 - final);
-                    outputActions~tpush(dohuya);
-                    ifNextNum = 0;
-                    isLastUintParsed = next;
-                  }
-                } else {
-                  int final = make_reverse_calculating(cacheBetweenOperators);
-                  cacheBetweenOperators = empty_tuple();
-                  outputNumbers~tpush(0 - final);
-                  outputActions~tpush(dohuya);
-                  ifNextNum = 0;
+                if (in_msg_body.slice_refs_empty?()){
                   isLastUintParsed = next;
                 }
               }
             }
           }
+        } else {
+          if (iLast == 40){
+              if ((next != 43) & (next != 45) & (next != 42) & (next != 47) & (next != 40) & (next != 41)) {
+                in_msg_body~load_uint(8);
+                int ifNextNum = 1;
+                tuple cacheBetweenOperators = empty_tuple();
+                while (ifNextNum == 1){
+                  if ((next != 43) & (next != 45) & (next != 42) & (next != 47) & (next != 40) & (next != 41)) {
+                    cacheBetweenOperators~tpush(next - 48);
+                    if ((begin_cell().store_slice(in_msg_body).builder_bits() / 8) != 0){
+                      next = in_msg_body~load_uint(8);
+                    } else {
+                      int final = make_reverse_calculating(cacheBetweenOperators);
+                      cacheBetweenOperators = empty_tuple();
+                      arrA = cons(dohuya, arrA);
+                      arrN = cons(0 - final, arrN);
+                      ifNextNum = 0;
+                      if (in_msg_body.slice_refs_empty?()){
+                        isLastUintParsed = next;
+                      }
+                    }
+                  } else {
+                    int final = make_reverse_calculating(cacheBetweenOperators);
+                    cacheBetweenOperators = empty_tuple();
+                    arrA = cons(dohuya, arrA);
+                    arrN = cons(0 - final, arrN);
+                    ifNextNum = 0;
+                    if (in_msg_body.slice_refs_empty?()){
+                      isLastUintParsed = next;
+                    }
+                  }
+                }
+              ;; }
+            }
+          }
         }
       }
-      var (int stack_length) = tlena(stack);
+      var (int stack_length) = ls_tlen(stack);
       if (stack_length != 0){
         int aaa = 0;
         while (aaa == 0) {
-          stack_length = tlena(stack);
-          if (stack_length != 0 ){
-            if ((revert_tuple(stack).at(0) != 40) & (getPrecedence(ch) <= getPrecedence(revert_tuple(stack).at(0)))){
-            int za = revert_tuple(stack).at(0);
-            if ((za != 43) & (za != 45) & (za != 42) & (za != 47) & (za != 40) & (za != 41)) {
-              outputNumbers~tpush(za);
-              outputActions~tpush(dohuya);
+          stack_length = ls_tlen(stack);
+          if (stack_length != 0){
+            if ((car(stack)) != 40) & (getPrecedence(ch) <= getPrecedence(car(stack))){
+              int za = car(stack);
+              if ((za != 43) & (za != 45) & (za != 42) & (za != 47) & (za != 40) & (za != 41)) {
+                arrA = cons(dohuya, arrA);
+                arrN = cons(za, arrN);
+              } else {
+                arrA = cons(za, arrA);
+                arrN = cons(dohuya, arrN);
+              }
+              stack~list_next();
+              stack_length = ls_tlen(stack);
             } else {
-              outputNumbers~tpush(dohuya);
-              outputActions~tpush(za);
+              aaa = 1;
             }
-            stack = revert_tuple(tuplermitem(revert_tuple(stack), 0));
-            stack_length = tlena(stack);
-            } else {
-            aaa = 1;
-          }
           } else {
             aaa = 1;
           }
         }
       }
-      stack~tpush(ch);
+      stack = cons(ch, stack);
     } else {
       if (ch == 40){
-        stack~tpush(ch);
+        stack = cons(ch, stack);
       } else {
         if (ch == 41){
-          int stack_length = tlena(stack);
-          while ((stack_length != 0) & (revert_tuple(stack).at(0) != 40)) {
-            int za = revert_tuple(stack).at(0);
-            if ((za != 43) & (za != 45) & (za != 42) & (za != 47) & (za != 40) & (za != 41)) {
-              outputNumbers~tpush(za);
-              outputActions~tpush(dohuya);
-            } else {
-              outputNumbers~tpush(dohuya);
-              outputActions~tpush(za);
-            }
-            stack = revert_tuple(tuplermitem(revert_tuple(stack), 0));
-            stack_length = tlena(stack);
-          }
-          stack = revert_tuple(tuplermitem(revert_tuple(stack), 0));
-        } else {
-          int ifNextNum = 1;
-          tuple cacheBetweenOperators = empty_tuple();
-          while (ifNextNum == 1){
-            if ((ch != 43) & (ch != 45) & (ch != 42) & (ch != 47) & (ch != 40) & (ch != 41)) {
-              cacheBetweenOperators~tpush(ch - 48);
-              if ((begin_cell().store_slice(in_msg_body).builder_bits() / 8) != 0){
-                ch = in_msg_body~load_uint(8);
+          int stack_length = ls_tlen(stack);
+          while ((stack_length != 0)) {
+            if (car(stack) != 40){
+              int za = car(stack);
+              if ((za != 43) & (za != 45) & (za != 42) & (za != 47) & (za != 40) & (za != 41)) {
+                arrA = cons(dohuya, arrA);
+                arrN = cons(za, arrN);
               } else {
+                arrA = cons(za, arrA);
+                arrN = cons(dohuya, arrN);
+              }
+              stack~list_next();
+              stack_length = ls_tlen(stack);
+            } else {
+              stack~list_next();
+              stack_length = ls_tlen(stack);
+            }
+          }
+        } else {
+          if ((ch != 43) & (ch != 45) & (ch != 42) & (ch != 47) & (ch != 40) & (ch != 41)) {
+            int ifNextNum = 1;
+            tuple cacheBetweenOperators = empty_tuple();
+            while (ifNextNum == 1){
+              ;;  ;;   ;;~dumpp(ch);
+              if ((ch != 43) & (ch != 45) & (ch != 42) & (ch != 47) & (ch != 40) & (ch != 41)) {
+                cacheBetweenOperators~tpush(ch - 48);
+                if ((begin_cell().store_slice(in_msg_body).builder_bits() / 8) != 0){
+                  ch = in_msg_body~load_uint(8);
+                } else {
+                  ifNextNum = 0;
+                  int final = make_reverse_calculating(cacheBetweenOperators);
+                  cacheBetweenOperators = empty_tuple();
+                  arrA = cons(dohuya, arrA);
+                  arrN = cons(final, arrN);
+                  ;; isLastUintParsed = ch;
+                }
+              } else {
+                ifNextNum = 0;
                 int final = make_reverse_calculating(cacheBetweenOperators);
                 cacheBetweenOperators = empty_tuple();
-                outputNumbers~tpush(final);
-                outputActions~tpush(dohuya);
-                ifNextNum = 0;
+                arrA = cons(dohuya, arrA);
+                arrN = cons(final, arrN);
                 isLastUintParsed = ch;
               }
-            } else {
-              int final = make_reverse_calculating(cacheBetweenOperators);
-              cacheBetweenOperators = empty_tuple();
-              outputNumbers~tpush(final);
-              outputActions~tpush(dohuya);
-              ifNextNum = 0;
-              isLastUintParsed = ch;
             }
           }
         }
       }
     }
-  }
-  
-  var (int stack_length) = tlena(stack);
-  while (stack_length != 0) {
-    int za = revert_tuple(stack).at(0);
-    if ((za != 43) & (za != 45) & (za != 42) & (za != 47) & (za != 40) & (za != 41)) {
-      outputNumbers~tpush(za);
-      outputActions~tpush(dohuya);
-    } else {
-      outputNumbers~tpush(dohuya);
-      outputActions~tpush(za);
+    if (((begin_cell().store_slice(in_msg_body).builder_bits() / 8) == 0)){
+      if (in_msg_body.slice_refs_empty?()){
+      } else {
+        cell ref = in_msg_body~load_ref();
+        in_msg_body = ref.begin_parse();
+        count_of_iterations = begin_cell().store_slice(in_msg_body).builder_bits() / 8;
+      }
     }
-    stack = revert_tuple(tuplermitem(revert_tuple(stack), 0));
-    stack_length = tlena(stack);
+    i += 1;
+    iLast = ch;
   }
-  var (int output_length) = tlena(outputNumbers);
-  stack = empty_tuple();
+   ;;   ;;~dump(revert_ls_tuple(arrA));
+   ;;   ;;~dump(revert_ls_tuple(arrN));
+  var (int stack_length) = ls_tlen(stack);
+  while (stack_length != 0) {
+    int za = car(stack);
+    if ((za != 43) & (za != 45) & (za != 42) & (za != 47) & (za != 40) & (za != 41)) {
+      arrA = cons(dohuya, arrA);
+      arrN = cons(za, arrN);
+    } else {
+      arrA = cons(za, arrA);
+      arrN = cons(dohuya, arrN);
+    }
+    stack~list_next();
+    stack_length = ls_tlen(stack);
+  }
+  var (int output_length) = ls_tlen(arrN);
+  stack = null();
   int chA = 0;
   int chN = 0;
   int ii = 0;
-  var (int outputNumbersz) = tlena(outputNumbers);
-  var (int outputActionsz) = tlena(outputActions);
-  ;; ~dup(outputActions);
-  ;; ~dup(outputNumbers);
-  ;; ~dup(output_length);
-  ;; ~dup(88888888888877777777);
+  arrA = revert_ls_tuple(arrA);
+  arrN = revert_ls_tuple(arrN);
   while (ii < output_length) {
-    chA = outputActions.at(ii);
-    chN = outputNumbers.at(ii);
+    chA = arrA~list_next();
+    chN = arrN~list_next();
     if (chA == dohuya){
-  ;; ~dup(888888888888777777771);
-  ;; ~dup(chN);
-      stack~tpush(chN);
+      stack = cons(chN, stack);
     } else {
-  ;; ~dup(8888888888887717777772);
       if ((chA == 43) | (chA == 45) | (chA == 42) | (chA == 47)) {
-  ;; ~dup(8888888888887717777773);
-  ;; ~dup(stack);
-        int b = revert_tuple(stack).at(0);
-        int a = revert_tuple(stack).at(1);
-  ;; ~dup(8888888888887717777774);
-        stack_length = tlena(stack);
-  ;; ~dup(8888888888887717777775);
-        stack = tuplermitem(tuplermitem(stack, stack_length - 1), stack_length - 2);
-  ;; ~dup(8888888888887717777776);
+        int b = stack~list_next();
+        int a = stack~list_next();
         int val = calcWithOperator(chA, a, b);
-        stack~tpush(val);
+        stack = cons(val, stack);
       }
     }
     ii += 1;
   }
-  ;; ;; ~dup(stack.at(0));
-  sendMessage(sender_address, stack.at(0));
+
+     ;;~dump(car(stack));
+  sendMessage(sender_address, op, query_id, car(stack));
   ;; return (output);
 }

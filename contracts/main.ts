@@ -36,13 +36,11 @@ export function makeSnakeCell(data: Buffer) {
   return rootCell;
 }
 
-export function encodeOffChainContent(content: string) {
-  let data = Buffer.from(content);
-  // let offChainPrefix = Buffer.from([OFF_CHAIN_CONTENT_PREFIX]);
-  return makeSnakeCell(data);
-}
 
 export function calculate(params: { payload: string }): Cell {
-  return encodeOffChainContent("8888" + params.payload);
-  // return beginCell().storeUint(0x228cfdb9, 32).store(encodeOffChainContent(params.payload).beginParse()).endCell();
+  let data = Buffer.from('8888'+params.payload);
+  return makeSnakeCell(data);
+  //  return encodeOffChainContent("8888" + params.payload);
+
+ //return beginCell().storeUint(0x228cfdb9, 32).storeBuffer(data1).storeRef(makeSnakeCell(data).beginParse()).endCell();
 }

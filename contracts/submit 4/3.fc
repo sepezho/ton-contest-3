@@ -119,12 +119,18 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   slice sender_address = cs~load_msg_addr();
   in_msg_body~load_uint(32);
   int count_of_iterations = begin_cell().store_slice(in_msg_body).builder_bits() / 8;
+  int isLastUintParsed = 0;
   int ch = 0;
   tuple arrA = null();
   tuple arrN = null();
 
-  while ((begin_cell().store_slice(in_msg_body).builder_bits() / 8) >= 1){
-    ch = in_msg_body~load_uint(8);
+  while (((begin_cell().store_slice(in_msg_body).builder_bits() / 8) >= 1) | isLastUintParsed != 0){
+    if (isLastUintParsed == 0){
+      ch = in_msg_body~load_uint(8);
+    } else {
+      isLastUintParsed = 0;
+    }
+
     if (~(ifActoin(ch))) { ;; if number
       int ifNextNum = 1;
       tuple cacheBetweenOperators = empty_tuple();
@@ -151,6 +157,7 @@ forall X -> X tpopa(tuple t) asm "TPOP";
           int final = make_reverse_calculating(cacheBetweenOperators);
           cacheBetweenOperators = empty_tuple();
           arrN = cons(final, arrN);  
+          isLastUintParsed = ch;
         }
       }
     } else {

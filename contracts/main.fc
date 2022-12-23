@@ -58,13 +58,13 @@ forall X -> X tpopa(tuple t) asm "TPOP";
 
 
 (int) make_reverse_calculating(tuple cacheBetweenOperators) {
-  var (int r) = tlena(cacheBetweenOperators);
+  var (int r) = ls_tlen(cacheBetweenOperators);
   int index = -1;
   int c = 0;
   int sum = 0;
   while (c < r) {
     index = c;
-    var (int q) = cacheBetweenOperators~tpopa();
+    var (int q) = cacheBetweenOperators~list_next();
     var rqwe = default_pow(10, index);
     sum += (q * rqwe);
     c += 1;
@@ -118,44 +118,40 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   cs~load_uint(4);
   slice sender_address = cs~load_msg_addr();
   in_msg_body~load_uint(32);
-  int count_of_iterations = begin_cell().store_slice(in_msg_body).builder_bits() / 8;
   int isLastUintParsed = 0;
   int ch = 0;
   tuple arrA = null();
   tuple arrN = null();
-
   while (((begin_cell().store_slice(in_msg_body).builder_bits() / 8) >= 1) | isLastUintParsed != 0){
     if (isLastUintParsed == 0){
       ch = in_msg_body~load_uint(8);
     } else {
       isLastUintParsed = 0;
     }
-
     if (~(ifActoin(ch))) { ;; if number
       int ifNextNum = 1;
-      tuple cacheBetweenOperators = empty_tuple();
+      tuple cacheBetweenOperators = null();
       while (ifNextNum == 1){
         if (~(ifActoin(ch))) {
-          cacheBetweenOperators~tpush(ch - 48);
+          cacheBetweenOperators = cons(ch - 48, cacheBetweenOperators);
           if ((begin_cell().store_slice(in_msg_body).builder_bits() / 8) != 0){
             ch = in_msg_body~load_uint(8);
           } else {
             if (in_msg_body.slice_refs_empty?()){
               ifNextNum = 0;
               int final = make_reverse_calculating(cacheBetweenOperators);
-              cacheBetweenOperators = empty_tuple();
+              cacheBetweenOperators = null();
               arrN = cons(final, arrN);  
             } else {
               cell ref = in_msg_body~load_ref();
               in_msg_body = ref.begin_parse();
-              count_of_iterations = begin_cell().store_slice(in_msg_body).builder_bits() / 8;
               ch = in_msg_body~load_uint(8);
             }
           }
         } else {
           ifNextNum = 0;
           int final = make_reverse_calculating(cacheBetweenOperators);
-          cacheBetweenOperators = empty_tuple();
+          cacheBetweenOperators = null();
           arrN = cons(final, arrN);  
           isLastUintParsed = ch;
         }
@@ -175,20 +171,13 @@ forall X -> X tpopa(tuple t) asm "TPOP";
             if (stack_length_one > 0){
               var (int asdf) =  car(arrA);
               while ((stack_length_one > 0) & someFunc(ch, asdf)){ 
-                ;;~dump(1999);
-                ;;~dump(arrA);
-                ;;~dump(arrN);
                 arrN = cons(calcWithOperator(arrA~list_next(), arrN~list_next(), arrN~list_next()), arrN);
                 stack_length_one = ls_tlen(arrA);
-                ;;~dump(stack_length_one);
                 if (stack_length_one != 0) {
                   asdf = car(arrA);
                 }
-                ;;~dump(1999);
               }
             }
-                ;;~dump(19991);
-
             arrA = cons(ch, arrA);  
           }
         }
@@ -199,53 +188,52 @@ forall X -> X tpopa(tuple t) asm "TPOP";
       } else {
         cell ref = in_msg_body~load_ref();
         in_msg_body = ref.begin_parse();
-        count_of_iterations = begin_cell().store_slice(in_msg_body).builder_bits() / 8;
       }
     }
   }
+  ~dump(arrN);
   while (ls_tlen(arrA) > 0){ 
     arrN = cons(calcWithOperator(arrA~list_next(), arrN~list_next(), arrN~list_next()), arrN);
   }
-  int res = car(arrN);
-  ~dump(arrA);
-  ~dump(arrN);
+  var (int res) = car(arrN);
   int negative = 0;
   if (res < 0){
     negative = 1;
   }
+  ~dump(res);
   res = abs(res);
+  ~dump(res);
   int c = 0;
   int index = 0;
   while (index == 0) {
     var rqwe = default_pow(10, c);
-    if ((res - rqwe) <= 0){
+    if ((res - rqwe) < 0){
       index = c;
     }
     c += 1;
   }
-  tuple result = empty_tuple();
+  ~dump(index);
   int c = 0;
   int resultNum = 0;
   int resultOld = 0;
   builder fuck = begin_cell();
   fuck~store_uint(0, 32);
+  if (negative == 1){
+    ~dump(45);
+    fuck~store_uint(45, 8);
+  }
   while (index >= 0) {
     var rqwe = default_pow(10, index);
     resultNum = res / rqwe;
-    if (c > 0){
-      int ababoba = resultNum - (resultOld * 10) + 48;
-      result~tpush(ababoba - 48);
+   
+   if (c != 0){
+     int ababoba = resultNum - (resultOld * 10) + 48;
       fuck~store_uint(ababoba, 8);
-    } else {
-      if ((c == 0) & (negative == 1)){
-        result~tpush(45);
-        fuck~store_uint(45, 8);
-      }
-    }
+      ~dump(ababoba - 48);
+   }
     resultOld = resultNum;
     c += 1;
     index = index - 1;
   }
-  ~dump(result);
   sendMessage(sender_address, fuck.end_cell());
 }

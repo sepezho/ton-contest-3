@@ -1,11 +1,8 @@
 import { Cell, beginCell, Address } from "ton";
 
-// encode contract storage according to save_data() contract method
 export function data(params: { ownerAddress: Address; number: number }): Cell {
   return beginCell().storeAddress(params.ownerAddress).storeUint(params.number, 64).endCell();
 }
-
-// message encoders for all ops (see contracts/imports/constants.fc for consts)
 
 function bufferToChunks(buff: Buffer, chunkSize: number) {
   let chunks: Buffer[] = [];
@@ -36,11 +33,7 @@ export function makeSnakeCell(data: Buffer) {
   return rootCell;
 }
 
-
 export function calculate(params: { payload: string }): Cell {
   let data = Buffer.from('8888'+params.payload);
   return makeSnakeCell(data);
-  //  return encodeOffChainContent("8888" + params.payload);
-
- //return beginCell().storeUint(0x228cfdb9, 32).storeBuffer(data1).storeRef(makeSnakeCell(data).beginParse()).endCell();
 }

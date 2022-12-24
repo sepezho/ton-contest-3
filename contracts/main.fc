@@ -191,7 +191,7 @@ forall X -> X tpopa(tuple t) asm "TPOP";
       }
     }
   }
-  ~dump(arrN);
+  ;;(arrN);
   while (ls_tlen(arrA) > 0){ 
     arrN = cons(calcWithOperator(arrA~list_next(), arrN~list_next(), arrN~list_next()), arrN);
   }
@@ -200,9 +200,9 @@ forall X -> X tpopa(tuple t) asm "TPOP";
   if (res < 0){
     negative = 1;
   }
-  ~dump(res);
+  ;;(res);
   res = abs(res);
-  ~dump(res);
+  ;;(res);
   int c = 0;
   int index = 0;
   while (index == 0) {
@@ -212,14 +212,14 @@ forall X -> X tpopa(tuple t) asm "TPOP";
     }
     c += 1;
   }
-  ~dump(index);
+  ;;(index);
   int c = 0;
   int resultNum = 0;
   int resultOld = 0;
   builder fuck = begin_cell();
   fuck~store_uint(0, 32);
   if (negative == 1){
-    ~dump(45);
+    ;;(45);
     fuck~store_uint(45, 8);
   }
   while (index >= 0) {
@@ -229,7 +229,7 @@ forall X -> X tpopa(tuple t) asm "TPOP";
    if (c != 0){
      int ababoba = resultNum - (resultOld * 10) + 48;
       fuck~store_uint(ababoba, 8);
-      ~dump(ababoba - 48);
+      ;;(ababoba - 48);
    }
     resultOld = resultNum;
     c += 1;
